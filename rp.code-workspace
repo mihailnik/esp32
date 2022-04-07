@@ -2,6 +2,14 @@
 	"folders": [
 		{
 			"path": "."
+		},
+		{
+			"name": "rp",
+			"path": "rp"
+		},
+		{
+			"name": "rp_tx",
+			"path": "rp_tx"
 		}
 	],
 	"settings": {}
