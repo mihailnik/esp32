@@ -15,16 +15,15 @@
 #include <main.h>
 
 #define CHANNEL 20
-#define MAX_PACKET_SIZE 10
 #define TIMEOUT 3000
 
 #define PACKET_NONE		0
 #define PACKET_OK		1
 #define PACKET_INVALID	2
 
-#define RP_NUM	3		// номер привода
-#define LED_PINE	A5		// номер привода
-#define SERVO_PINE	7		// номер привода
+#define RP_NUM			3		// номер привода
+#define LED_PINE		A5		// номер привода
+#define SERVO_PINE		7		// номер привода
 
 Servo servo0;  // create servo object to control a servo
 Servo servo1;  // create servo object to control a servo
@@ -224,7 +223,6 @@ void loop()
 			pingInfo.ready = PACKET_NONE;
 			RX_CMD_EXEC();
 		}
-		
 	}
 	else // not sleep mode
 	{
