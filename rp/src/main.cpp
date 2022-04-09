@@ -25,6 +25,21 @@
 #define LED_PINE		A5		// номер привода
 #define SERVO_PINE		7		// номер привода
 
+// static char data[MAX_PACKET_SIZE] = {0};// data[D_ADR, D_CMD, D_PAR_0, D_PAR_1, D_PAR_2, D_PAR_3, D_PAR_4, D_PAR_5, D_PAR_6]
+struct structIntData
+{
+	int pkHead;
+	int iParam_0;
+	int iParam_1;
+	int iParam_2;
+	int iParam_3;
+};
+
+static union	{
+	char data[MAX_PACKET_SIZE];// data[D_ADR, D_CMD, D_PAR_0, D_PAR_1, D_PAR_2, D_PAR_3, D_PAR_4, D_PAR_5, D_PAR_6]
+	structIntData iData; 
+} ;
+
 Servo servo0;  // create servo object to control a servo
 Servo servo1;  // create servo object to control a servo
 Servo servo2;  // create servo object to control a servo

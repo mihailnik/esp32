@@ -6,6 +6,10 @@
 		{
 			"name": "rp_tx",
 			"path": "rp_tx"
+		},
+		{
+			"name": "g_key_test",
+			"path": "g_key_test"
 		}
 	],
 	"settings": {}

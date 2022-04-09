@@ -16,7 +16,6 @@
 #include <main.h>
 
 #define CHANNEL 20
-#define MAX_PACKET_SIZE 10
 #define TIMEOUT 1000
 
 #define PACKET_NONE		0
@@ -25,7 +24,28 @@
 
 #define LED_PIN			6
 
-static char data[MAX_PACKET_SIZE] = {0};
+// структура и объединение пакета передачи int через char
+// static char data[MAX_PACKET_SIZE] = {0};// data[D_ADR, D_CMD, D_PAR_0, D_PAR_1, D_PAR_2, D_PAR_3, D_PAR_4, D_PAR_5, D_PAR_6]
+struct structIntData
+{
+	int pkHead;
+	int iParam_0;
+	int iParam_1;
+	int iParam_2;
+	int iParam_3;
+};
+
+static union	{
+	char data[MAX_PACKET_SIZE];// data[D_ADR, D_CMD, D_PAR_0, D_PAR_1, D_PAR_2, D_PAR_3, D_PAR_4, D_PAR_5, D_PAR_6]
+	structIntData iData; 
+} ;
+
+#define X_PIN		A6
+#define Y_PIN		A7
+#define BUTTON_PIN	A5
+int xPosition =	0;
+int yPosition =	0;
+int buttonState = 0;
 
 static uint32_t replies;
 static uint32_t timeouts;
@@ -40,8 +60,28 @@ char hexaKeys[ROWS][COLS] = {
   {'7','8','9'},
   {'*','0','#'}
 };
+
 byte rowPins[ROWS] = {A0, A1, A2, A3}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {3, 4, 7}; //connect to the column pinouts of the keypad
+
+void joy_stik(int * X, int * Y, int * Z, char * btn, char * key ){
+
+static unsigned long joy_stik_millis;
+
+	if ( (millis() - joy_stik_millis) > 500) {
+    joy_stik_millis = millis();
+
+	xPosition = analogRead(X_PIN);
+	yPosition = analogRead(Y_PIN);
+	buttonState = digitalRead(BUTTON_PIN);
+	Serial.print("X: ");
+	Serial.print(xPosition);
+	Serial.print(" | Y: ");
+	Serial.print(yPosition);
+	Serial.print(" | Button: ");
+	Serial.println(buttonState);
+  }
+}
 
 //initialize an instance of class NewKeypad
 Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
@@ -127,6 +167,11 @@ void setup()
 {
 	Serial.begin(115200);
 
+analogReadResolution(8);
+pinMode(X_PIN, INPUT);
+pinMode(Y_PIN, INPUT);
+pinMode(BUTTON_PIN, INPUT_PULLUP);
+
 	pinMode(LED_PIN, OUTPUT); // LED 
 
 	// Start up
@@ -136,6 +181,8 @@ void setup()
 
 void loop()
 {
+joy_stik();
+
 char key_ret = 0;
 	key_ret = swich_key_control();
 	if (key_ret != 0)
