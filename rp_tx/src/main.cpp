@@ -64,7 +64,7 @@ char hexaKeys[ROWS][COLS] = {
 byte rowPins[ROWS] = {A0, A1, A2, A3}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {3, 4, 7}; //connect to the column pinouts of the keypad
 
-void joy_stik(int * X, int * Y, int * Z, char * btn, char * key ){
+void joy_stik(){
 
 static unsigned long joy_stik_millis;
 
@@ -167,7 +167,7 @@ void setup()
 {
 	Serial.begin(115200);
 
-analogReadResolution(8);
+//analogReadResolution(8);
 pinMode(X_PIN, INPUT);
 pinMode(Y_PIN, INPUT);
 pinMode(BUTTON_PIN, INPUT_PULLUP);
@@ -181,6 +181,7 @@ pinMode(BUTTON_PIN, INPUT_PULLUP);
 
 void loop()
 {
+// Обрабатываем джойстик	
 joy_stik();
 
 char key_ret = 0;
