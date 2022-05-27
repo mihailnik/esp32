@@ -11,6 +11,7 @@
 #define MAIN_ADR   0        // Адрес пульта управления
 #define BROAD_ADR   127     // Адрес широкого вещания
 
+// Индекс параметра в массиве пакета передаваемых данных
 #define I_ADR   0
 #define I_CMD   1
 #define I_PAR_0 2
