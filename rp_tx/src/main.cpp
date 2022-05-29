@@ -106,13 +106,17 @@ void loop()
 // буфер клавіши з матричної клавіатури
 static	char key=0;
 // флаг події
-static	char ev=0;
 
 while (true)
 {
 
-	//зчитуємо натиснуту клавішу
+	//зчитуємо клавіатуру якщо є в кільцевий буфер
 	key = customKeypad.getKey();
+	if (key)
+	{
+		evQueue.push();
+	}
+	
 	// Кінцевий автомат "активний канал" ch1...ch9, ALL-канал-"всі"
 	fsm_channels_swich();
 
@@ -281,7 +285,12 @@ static byte fsm_Ch_State = ALL;
 }
 void fsm_ALL(void)
  {
-
+	if(QueueEvBtn16.isEmpty()){
+		//btnMSG = {254,0};
+		;// нет команд от кнопок
+	} else {
+		btnMSG=QueueEvBtn16.shift();
+	}
  }
  void fsm_CH1(void)
  {

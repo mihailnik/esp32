@@ -16,5 +16,9 @@
 			"path": "joyst"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"files.associations": {
+			"*.tpp": "cpp"
+		}
+	}
 }
