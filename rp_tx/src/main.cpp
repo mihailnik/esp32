@@ -24,6 +24,13 @@
 
 #define LED_PIN			6
 
+static uint32_t replies;
+static uint32_t timeouts;
+static uint32_t invalids;
+
+// кільцевий буфер подій
+CircularBuffer<EVQUEUE_OBJ_t, 16> evQueue;
+
 // структура и объединение пакета передачи int через char
 // static char data[MAX_PACKET_SIZE] = {0};// data[D_ADR, D_CMD, D_PAR_0, D_PAR_1, D_PAR_2, D_PAR_3, D_PAR_4, D_PAR_5, D_PAR_6]
 struct structIntData
@@ -40,17 +47,18 @@ static union	{
 	structIntData iData; 
 } ;
 
-#define X_PIN		A6
-#define Y_PIN		A7
-#define BUTTON_PIN	A5
-int xPosition =	0;
-int yPosition =	0;
-int buttonState = 0;
+rp_chanel rp0 = rp_chanel(0);
+rp_chanel rp1 = rp_chanel(1);
+rp_chanel rp2 = rp_chanel(2);
+rp_chanel rp3 = rp_chanel(3);
+rp_chanel rp4 = rp_chanel(4);
+rp_chanel rp5 = rp_chanel(5);
+rp_chanel rp6 = rp_chanel(6);
+rp_chanel rp7 = rp_chanel(7);
+rp_chanel rp8 = rp_chanel(8);
+rp_chanel rp9 = rp_chanel(9);
 
-static uint32_t replies;
-static uint32_t timeouts;
-static uint32_t invalids;
-
+// створюємо матричну клавіатуру
 const byte ROWS = 4; //four rows
 const byte COLS = 3; //fcolumns
 //define the cymbols on the buttons of the keypads
@@ -63,92 +71,11 @@ char hexaKeys[ROWS][COLS] = {
 
 byte rowPins[ROWS] = {A0, A1, A2, A3}; //connect to the row pinouts of the keypad
 byte colPins[COLS] = {3, 4, 7}; //connect to the column pinouts of the keypad
-
-void joy_stik(){
-
-static unsigned long joy_stik_millis;
-
-	if ( (millis() - joy_stik_millis) > 500) {
-    joy_stik_millis = millis();
-
-	xPosition = analogRead(X_PIN);
-	yPosition = analogRead(Y_PIN);
-	buttonState = digitalRead(BUTTON_PIN);
-	Serial.print("X: ");
-	Serial.print(xPosition);
-	Serial.print(" | Y: ");
-	Serial.print(yPosition);
-	Serial.print(" | Button: ");
-	Serial.println(buttonState);
-  }
-}
-
-//initialize an instance of class NewKeypad
 Keypad customKeypad = Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
 
-char swich_key_control(void){
-char key = 0;
-static	char	customKey;
+//створюємо джойстік
+joystik joy = joystik(A7, 2, A6, 2, A5, 50);
 
-	customKey = customKeypad.getKey();
-	// обнуляем данные
-	if (customKey)
-	{	
-		for (uint8_t i = 0; i < MAX_PACKET_SIZE; i++){	data[i] = 0;} // ОБНУЛЯЕМ БУФЕР
-		switch (customKey)
-		{
-			case '#':
-			for (uint8_t i = 0; i < MAX_PACKET_SIZE; i++){	data[i] = RP_SLEP;} /// усыпляем
-			key = '#';
-			break;
-			case '0':
-			for (uint8_t i = 0; i < MAX_PACKET_SIZE; i++){	data[i] = RP_WEKUP;} // просыпаемся
-			key = '0';
-			break;
-			case '1':
-			data[1] = RP_FIER;
-			key = '1';
-			break;
-			case '2':
-			data[2] = RP_FIER;
-			key = '2';
-			break;
-			case '3':
-			data[3] = RP_FIER;
-			key = '3';
-			break;
-			case '4':
-			data[4] = RP_FIER;
-			key = '4';
-			break;
-			case '5':
-			data[5] = RP_FIER;
-			key = '5';
-			break;
-			case '6':
-			data[6] = RP_FIER;
-			key = '6';
-			break;
-			case '7':
-			data[7] = RP_FIER;
-			key = '7';
-			break;
-			case '8':
-			data[8] = RP_FIER;
-			key = '8';
-			break;
-			case '9':
-			data[9] = RP_FIER;
-			key = '9';
-			break;
-	
-			default:
-			break;
-		}
-		Serial.println(customKey);
-	}
-return key;
-}
 
 
 typedef struct{
@@ -167,11 +94,6 @@ void setup()
 {
 	Serial.begin(115200);
 
-//analogReadResolution(8);
-pinMode(X_PIN, INPUT);
-pinMode(Y_PIN, INPUT);
-pinMode(BUTTON_PIN, INPUT_PULLUP);
-
 	pinMode(LED_PIN, OUTPUT); // LED 
 
 	// Start up
@@ -181,8 +103,20 @@ pinMode(BUTTON_PIN, INPUT_PULLUP);
 
 void loop()
 {
-// Обрабатываем джойстик	
-joy_stik();
+// буфер клавіши з матричної клавіатури
+static	char key=0;
+// флаг події
+static	char ev=0;
+
+while (true)
+{
+
+	//зчитуємо натиснуту клавішу
+	key = customKeypad.getKey();
+	// Кінцевий автомат "активний канал" ch1...ch9, ALL-канал-"всі"
+	fsm_channels_swich();
+
+}
 
 char key_ret = 0;
 	key_ret = swich_key_control();
@@ -303,3 +237,85 @@ void SI446X_CB_RXINVALID(int16_t rssi)
 	pingInfo.ready = PACKET_INVALID;
 	pingInfo.rssi = rssi;
 }
+
+// channel states function
+void fsm_channels_swich(void)
+{
+static byte fsm_Ch_State = ALL;
+	switch (fsm_Ch_State)
+	{
+	case ALL:
+		fsm_ALL();
+		break;
+	case CH1:
+		fsm_CH1();
+		break;
+	case CH2:
+		fsm_CH2();
+		break;
+	case CH3:
+		fsm_CH3();
+		break;
+	case CH4:
+		fsm_CH4();
+		break;
+	case CH5:
+		fsm_CH5();
+		break;
+	case CH6:
+		fsm_CH6();
+		break;
+	case CH7:
+		fsm_CH7();
+		break;
+	case CH8:
+		fsm_CH8();
+		break;
+	case CH9:
+		fsm_CH9();
+		break;
+	default:
+//	fsm_Ch_State = ALL;
+		break;
+	}
+}
+void fsm_ALL(void)
+ {
+
+ }
+ void fsm_CH1(void)
+ {
+
+ }
+ void fsm_CH2(void)
+ {
+
+ }
+ void fsm_CH3(void)
+ {
+
+ }
+ void fsm_CH4(void)
+ {
+
+ }
+ void fsm_CH5(void)
+ {
+
+ }
+ void fsm_CH6(void)
+ {
+
+ }
+ void fsm_CH7(void)
+ {
+
+ }
+ void fsm_CH8(void)
+ {
+
+ }
+ void fsm_CH9(void)
+ {
+
+ }

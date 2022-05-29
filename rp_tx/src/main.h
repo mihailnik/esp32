@@ -1,34 +1,35 @@
-#ifndef Main_H_
-#define Main_H_
+#pragma once
+#include "common_constants.h"
+#include <CircularBuffer.h>
+#include "rp_chanel.h"
+#include "Joystik.h"
 #include <Arduino.h>
 #include <Si446x.h>
 #include <Keypad.h>
-
-// data[D_ADR, D_CMD, D_PAR_0, D_PAR_1, D_PAR_2, D_PAR_3, D_PAR_4, D_PAR_5, D_PAR_6]
-#define MAX_PACKET_SIZE 8 // розмір пакету даних - data
 
 #define MY_ADR   1          // адрес данного приемника
 #define MAIN_ADR   0        // Адрес пульта управления
 #define BROAD_ADR   127     // Адрес широкого вещания
 
-// Индекс параметра в массиве пакета передаваемых данных
-#define I_ADR   0
-#define I_CMD   1
-#define I_PAR_0 2
-#define I_PAR_1 3
-#define I_PAR_2 4
-#define I_PAR_3 5
-#define I_PAR_4 6
-#define I_PAR_5 7
-
-#define CMD_NOP      0
-#define CMD_WEKUP    1
-#define CMD_FIER     2
-#define CMD_SLEP     3
-#define CMD_AUTO     4
-#define CMD_MOVE     5
+// структура подій з клавіатури, кнопки джойстіка, потенціометрів джойстіка
+typedef struct {
+  byte eventSource;
+  int eventParam;
+} EVQUEUE_OBJ_t;
 
 void RP_SLEEP(void);
 void RX_CMD_EXEC(void);
+uint8_t RadioTX(si446x_state_t state_after_tx);
 
-#endif
+// channel states function
+void fsm_channels_swich(void);
+void fsm_ALL(void);
+void fsm_CH1(void);
+void fsm_CH2(void);
+void fsm_CH3(void);
+void fsm_CH4(void);
+void fsm_CH5(void);
+void fsm_CH6(void);
+void fsm_CH7(void);
+void fsm_CH8(void);
+void fsm_CH9(void);
