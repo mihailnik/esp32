@@ -5,7 +5,7 @@
 class rp_chanel {
 public:
 	// members
-    byte ch_number; //номер канала
+  byte ch_number; //номер канала
 	int X_axis; //буфер оси X
 	int Y_axis; //буфер оси Y
 	int Z_axis; //буфер оси Z
